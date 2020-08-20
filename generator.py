@@ -1,6 +1,6 @@
 from QG import QueGenerator
 
-qg = QueGenerator(model_dir="/Users/southdam/Desktop/Master-Project-Flashcard")
+qg = QueGenerator()
 
 def omit(summary):
     """
