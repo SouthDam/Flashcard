@@ -1,6 +1,8 @@
 import torch
 import pandas
 from itertools import chain
+import nltk
+nltk.download('punkt')
 from nltk.tokenize import sent_tokenize
 from nltk import ngrams
 from transformers import (
@@ -14,10 +16,11 @@ class QueGenerator():
   def __init__(self,threshold=0.75):
     '''
       threshold: quality control. discard the question if overlapping < threshold
-      model_dir: directory to saved models
-          question generation & answer extracting models can be downloaded at https://drive.google.com/uc?id=1vhsDOW9wUUO83IQasTPlkxb82yxmMH-V
-          question answering model can be downloaded at https://huggingface.co/distilbert-base-cased-distilled-squad
-            ps: tokenizer can't be downloaded directly
+      
+      question generation & answer extracting models can be downloaded at https://drive.google.com/uc?id=1vhsDOW9wUUO83IQasTPlkxb82yxmMH-V
+
+      question answering model can be downloaded at https://huggingface.co/distilbert-base-cased-distilled-squad
+      ps: tokenizer can't be downloaded directly
     '''
     self._threshold = threshold
     # self._dir = model_dir
@@ -37,20 +40,20 @@ class QueGenerator():
     self.ans_model = self.ans_model.to(self.device)
     self.qa_model = self.qa_model.to(self.device)
   
-  def generate(self, text):
+  def generate(self, text, title):
     # generate questions
-    answers = self._extract_answers(text)
+    answers = self._extract_answers(text,title)
     questions = self._get_questions(text, answers)
 
     # isGood: accept the question if True, deny the question if False
-    output = [{'answer': ans, 'question': que, 'isGood':False} for ans, que in zip(answers, questions)]
+    output = [{'title':title,'answer': ans, 'question': que, 'isGood':False} for ans, que in zip(answers, questions)]
 
     # questions sent to the filter to discard ques with low quality
     filtered_output = self.que_filter(output,text)
 
     return filtered_output
   
-  def _extract_answers(self, text):
+  def _extract_answers(self, text, title):
     # split into sentences
     sents = sent_tokenize(text)
 
@@ -76,6 +79,13 @@ class QueGenerator():
     answers = [item.split('[SEP]') for item in dec]
     answers = chain(*answers)
     answers = [ans.strip() for ans in answers if ans != ' ']
+
+    # remove duplicate
+    answers = list(set(answers))
+    # remove answers that contained in the title
+    answers = [ans for ans in answers if ans not in title and title not in ans]
+    
+
     return answers
   
   def _get_questions(self, text, answers):
@@ -122,6 +132,8 @@ class QueGenerator():
 
       if overlap > self._threshold:
         que_ans['isGood'] = True
+      elif ans_by_qa in que_ans['answer'] or que_ans['answer'] in ans_by_qa:
+        que_ans['isGood'] = True
       
     return qa_pairs
 
@@ -140,3 +152,4 @@ prevalent on Mars's surface, which gives it a reddish appearance.
 
 print(qg.generate(text_example))
 """
+
