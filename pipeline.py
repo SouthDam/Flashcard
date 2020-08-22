@@ -46,16 +46,16 @@ if __name__=="__main__":
             pass
         print("Finished summarization")
         if type(summary)==str:
-            omit(summary)
+            omit(summary,name)
         elif type(summary)==dict:
             for key, value in summary.items():
                 if type(value)==str:
                     print(key)
-                    omit(value)
+                    omit(value,name)
                 elif type(value)==dict:
                     print(key)
                     for subkey, subvalue in value.items():
                         print(subkey)
-                        omit(subvalue)
+                        omit(subvalue,name)
                 else:
                     pass

@@ -2,7 +2,6 @@ import torch
 import pandas
 from itertools import chain
 import nltk
-nltk.download('punkt')
 from nltk.tokenize import sent_tokenize
 from nltk import ngrams
 from transformers import (

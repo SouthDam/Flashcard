@@ -8,6 +8,7 @@ from transformers import (
 )
 from preprocess import get_intro, get_full
 import torch
+from time import time
 
 class Summarizer():
     def __init__(self):
@@ -22,13 +23,19 @@ class Summarizer():
         The input should be the name of a wikipedia page
         The output is the summary of its introduction part
         """
+        time_start=time()
         text = get_intro(name)
         print("Text read")
+        time_end=time()
+        print('read time cost',time_end-time_start,'s')
         # summary of paragraphs
+        time_start=time()
         para_summary = self.summarize(text)
         para_summary = [para_summary]
         # final output summary
         summary = self.summarize(para_summary,stage=2)
+        time_end=time()
+        print('summary time cost',time_end-time_start,'s')
         return summary
 
     def ForIntro(self, name):
@@ -36,9 +43,15 @@ class Summarizer():
         The input should be the name of a wikipedia page
         The output is the paragraph summaries of its introduction part
         """
+        time_start=time()
         text = get_intro(name)
         print("Text read")
+        time_end=time()
+        print('read time cost',time_end-time_start,'s')
+        time_start=time()
         summary = self.summarize(text)
+        time_end=time()
+        print('summary time cost',time_end-time_start,'s')
         return summary
 
     def ForFullRough(self, name):
@@ -46,9 +59,13 @@ class Summarizer():
         The input should be the name of a wikipedia page
         The output is the section-wise summaries of its content
         """
+        time_start=time()
         text_dict = get_full(name)
         print("Text read")
+        time_end=time()
+        print('read time cost',time_end-time_start,'s')
         ss = {}
+        time_start=time()
         for key, value in text_dict.items():
             # if section has no subsections
             if type(value)==list:
@@ -63,6 +80,8 @@ class Summarizer():
                     summary = self.summarize([pre_summary],stage=2)
                     this_value[subkey] = summary
                 ss[key] = this_value
+        time_end=time()
+        print('summary time cost',time_end-time_start,'s')
         return ss
 
     def ForFull(self, name):
@@ -70,9 +89,13 @@ class Summarizer():
         The input should be the name of a wikipedia page
         The output is the paragraph-wise summaries of its content
         """
+        time_start=time()
         text_dict = get_full(name)
         print("Text read")
+        time_end=time()
+        print('read time cost',time_end-time_start,'s')
         ss = {}
+        time_start=time()
         for key, value in text_dict.items():
             # if section has no subsections
             if type(value)==list:
@@ -85,6 +108,8 @@ class Summarizer():
                     summary = self.summarize(subvalue)
                     this_value[subkey] = summary
                 ss[key] = this_value
+        time_end=time()
+        print('summary time cost',time_end-time_start,'s')
         return ss
 
 

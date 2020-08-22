@@ -1,13 +1,17 @@
 from QG import QueGenerator
+from time import time
 
 qg = QueGenerator()
 
-def omit(summary):
+def omit(summary,title):
     """
     INPUT: string
     OUTPUT: print flashcards on the screen
     """
-    cards = qg.generate(summary)
+    time_start=time()
+    cards = qg.generate(summary,title)
+    time_end=time()
+    print('generate time cost',time_end-time_start,'s')
     print("     ")
     print("     ")
     print(summary)
