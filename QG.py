@@ -22,12 +22,12 @@ class QueGenerator():
     self._threshold = threshold
     # self._dir = model_dir
     
-    self.que_model = T5ForConditionalGeneration.from_pretrained('/t5_que_gen/t5_que_gen_model/t5_base_que_gen/')
-    self.ans_model = T5ForConditionalGeneration.from_pretrained('/t5_que_gen/t5_ans_gen_model/t5_base_ans_gen/')
+    self.que_model = T5ForConditionalGeneration.from_pretrained('/t5_que_gen_model/t5_base_que_gen/')
+    self.ans_model = T5ForConditionalGeneration.from_pretrained('/t5_ans_gen_model/t5_base_ans_gen/')
     self.qa_model = DistilBertForQuestionAnswering.from_pretrained('distilbert-base-cased-distilled-squad')
     
-    self.que_tokenizer = T5Tokenizer.from_pretrained('/t5_que_gen/t5_que_gen_model/t5_base_tok_que_gen/')
-    self.ans_tokenizer = T5Tokenizer.from_pretrained('/t5_que_gen/t5_ans_gen_model/t5_base_tok_ans_gen/')
+    self.que_tokenizer = T5Tokenizer.from_pretrained('/t5_que_gen_model/t5_base_tok_que_gen/')
+    self.ans_tokenizer = T5Tokenizer.from_pretrained('/t5_ans_gen_model/t5_base_tok_ans_gen/')
     self.qa_tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-cased-distilled-squad")
 
       
