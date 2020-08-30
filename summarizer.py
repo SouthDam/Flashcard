@@ -9,6 +9,12 @@ from transformers import (
 from preprocess import get_intro, get_full
 import torch
 from time import time
+from concurrent.futures import ProcessPoolExecutor
+import concurrent.futures
+
+executor= ProcessPoolExecutor()
+# executor can't be put in the class, otherwise 
+# it would produce weakref object which could not be pickled
 
 class Summarizer():
     def __init__(self):
@@ -111,9 +117,16 @@ class Summarizer():
         time_end=time()
         print('summary time cost',time_end-time_start,'s')
         return ss
+    
+    def summarize(self,p,stage=1):
+        if self.device=="cpu":
+            return self.parallel_summarize(p,stage)
+        elif self.device=="cuda":
+            return self.cuda_summarize(p,stage)
+        else:
+            pass
 
-
-    def summarize(self, p, stage=1):
+    def cuda_summarize(self, p, stage=1):
         """
         Input: a list of string, ideally list of paragraphs
         Output: string, combination of summaries of input strings
@@ -129,6 +142,36 @@ class Summarizer():
             if stage==2:
                 ip = self.tokenizer.encode("summarize: "+p[i], return_tensors="pt", max_length=1024, truncation=True)
                 op = self.model.generate(ip, max_length=250, min_length=80, length_penalty=2.0, num_beams=4, early_stopping=True)
+            op = self.tokenizer.decode(op[0],skip_special_tokens=True)
+            if op[-1] != ".":
+                op += "."
+            summary += op
+            summary += " "
+        summary=summary[:-1]
+        return summary
+    
+    def generate1(self,ip):
+        return self.model.generate(ip, max_length=150, min_length=0, length_penalty=2.0, num_beams=4, early_stopping=True)
+    
+    def generate2(self,ip):
+        return self.model.generate(ip, max_length=150, min_length=80, length_penalty=2.0, num_beams=4, early_stopping=True)
+
+    def parallel_summarize(self,p,stage=1):
+        """
+        Input: a list of string, ideally list of paragraphs
+        Output: string, combination of summaries of input strings
+        """
+        summary = str()
+        ip=[]
+        for i in range(len(p)):
+            if len(p[i])<50:
+                continue
+            ip.append(self.tokenizer.encode("summarize: "+p[i], return_tensors="pt", max_length=1024, truncation=True))
+        if stage==1:
+            ge = executor.map(self.generate1,ip)
+        if stage==2:
+            ge = executor.map(self.generate2,ip)
+        for op in ge:
             op = self.tokenizer.decode(op[0],skip_special_tokens=True)
             if op[-1] != ".":
                 op += "."
